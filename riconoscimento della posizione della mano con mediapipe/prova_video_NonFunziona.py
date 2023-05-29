@@ -83,7 +83,7 @@ def transform(img, frame_timestamp_ms):
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
     # STEP 4: Detect hand landmarks from the input image.
-    detection_result = detector.detect_async(mp_image, frame_timestamp_ms)
+    detection_result = detector.detect_async(mp_image, frame_timestamp_ms) #l'errore sta qui
 
     # STEP 5: Process the classification result. In this case, visualize it.
     annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
@@ -107,8 +107,7 @@ def main():
 
     while cap.isOpened():
         # get the current frame
-        ret, frame = cap.read()
-        img = frame
+        ret, img = cap.read()
         if ax_img is None:
             ax_img = plt.imshow(transform(img, 0))
             plt.axis("off")  # hide axis, ticks, ...
