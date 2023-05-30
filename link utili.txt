@@ -1,3 +1,6 @@
 Sito web per il riconoscimento di alcuni gesti (non LIS/ASL) https://techvidvan.com/tutorials/hand-gesture-recognition-tensorflow-opencv/
-Riconoscimento di gesti ASL a partire da video (questo sembra il più preciso come risultato finale, tiene anche conto della faccia) https://www.youtube.com/watch?v=L-IaQch8KYY
-Riconoscimento di gesti ASL a partire da immagini (non tiene conto del movimento) https://www.youtube.com/watch?v=pDXdlXlaCco
+
+Più seri:
+Riconoscimento di gesti ASL a partire da video https://www.youtube.com/watch?v=L-IaQch8KYY
+Riconoscimento di gesti ASL a partire da video (modello LSTM) https://www.youtube.com/watch?v=doDUihpj6ro&t=2741s
+Qui tanti codici diversi con approcci diversi ma andrebbero analizzati uno a uno https://www.kaggle.com/competitions/asl-signs/code
