@@ -12,7 +12,7 @@ hands = mpHands.Hands(max_num_hands=1, min_detection_confidence=0.7) #2 mani per
 mpDraw = mp.solutions.drawing_utils
 
 # Load the gesture recognizer model
-model = load_model('mp_hand_gesture')
+model = load_model('mp_hand_gesture\saved_model.pb')
 
 # Load class names
 f = open('gesture.names', 'r')
