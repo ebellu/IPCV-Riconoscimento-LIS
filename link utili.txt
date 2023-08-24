@@ -4,3 +4,4 @@ Più seri:
 Riconoscimento di gesti ASL a partire da video https://www.youtube.com/watch?v=L-IaQch8KYY
 Riconoscimento di gesti ASL a partire da video (modello LSTM) https://www.youtube.com/watch?v=doDUihpj6ro&t=2741s
 Qui tanti codici diversi con approcci diversi ma andrebbero analizzati uno a uno https://www.kaggle.com/competitions/asl-signs/code
+ACTION RECOGNITION https://www.youtube.com/watch?v=doDUihpj6ro&t=7913s
