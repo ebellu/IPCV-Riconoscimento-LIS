@@ -23,13 +23,13 @@ def draw_landmarks(image, results):
     mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS) # D
 def draw_styled_landmarks(image, results):
     """
-    # Draw face connections
+    # Draw face connections NON SERVE
     
     mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACE_CONNECTIONS, 
                              mp_drawing.DrawingSpec(color=(80,110,10), thickness=1, circle_radius=1), 
                              mp_drawing.DrawingSpec(color=(80,256,121), thickness=1, circle_radius=1)
                              ) 
-    # Draw pose connections
+    # Draw pose connections NON SERVE
     mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
                              mp_drawing.DrawingSpec(color=(80,22,10), thickness=2, circle_radius=4), 
                              mp_drawing.DrawingSpec(color=(80,44,121), thickness=2, circle_radius=2)
@@ -46,7 +46,6 @@ def draw_styled_landmarks(image, results):
                              mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=4), 
                              mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
                              ) 
-"""
 cap = cv2.VideoCapture(0)
 # Set mediapipe model 
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
@@ -85,22 +84,22 @@ for res in results.pose_landmarks.landmark:
 lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
 rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten()
 #face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(1404)
-"""
+
 def extract_keypoints(results):
     #pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33*4)
     #face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
     lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
     rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
     return np.concatenate([lh, rh])
-"""
+
 result_test = extract_keypoints(results)
 np.save('0', result_test)
 np.load('0.npy')
-"""
+
 
 #SETUP DELLE CARTELLE
 # Path for exported data, numpy arrays
-DATA_PATH = os.path.join('video training') 
+DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
 actions = np.array(['A', 'B', 'C'])
@@ -108,20 +107,20 @@ actions = np.array(['A', 'B', 'C'])
 # Thirty videos worth of data
 no_sequences = 6
 
+# Videos are going to be 30 frames in length
+sequence_length = 25
+
 # Folder start
 start_folder = 1
-
-#crea le cartelle dove mette i video di training (a noi non serve, le abbiamo già)
 """
 for action in actions: 
-    dirmax = np.max(np.array(os.listdir(os.path.join(DATA_PATH, action))).astype(int))
     for sequence in range(1,no_sequences+1):
         try: 
-            os.makedirs(os.path.join(DATA_PATH, action, str(dirmax+sequence)))
+            os.makedirs(os.path.join(DATA_PATH, action, str(sequence)))
         except:
             pass
-"""
 
+"""
 """
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
@@ -179,23 +178,19 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
     cap.release()
     cv2.destroyAllWindows()
-"""
 
+"""
 
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 
-label_map = {label:num for num, label in enumerate(actions)} #assegno una label (che è un numero) a ogni lettera. A=0, B=1, C=2, ecc..
+label_map = {label:num for num, label in enumerate(actions)}
 
 sequences, labels = [], []
 for action in actions:
-    #for sequence in np.array(os.listdir(os.path.join(DATA_PATH, action))).astype(int):
-    for sequence in range(no_sequences):
+    for sequence in range(1,no_sequences+1):
         window = []
-        path = DATA_PATH + "/" + action + "/" + str(sequence) + ".mp4"
-        cap = cv2.VideoCapture(path)
-        sequence_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         for frame_num in range(sequence_length):
             res = np.load(os.path.join(DATA_PATH, action, str(sequence), "{}.npy".format(frame_num)))
             window.append(res)
@@ -205,7 +200,6 @@ X = np.array(sequences)
 y = to_categorical(labels).astype(int)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
 
-
 #7. Build and Train LSTM Neural Network
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
@@ -214,7 +208,7 @@ from keras.callbacks import TensorBoard
 log_dir = os.path.join('Logs')
 tb_callback = TensorBoard(log_dir=log_dir)
 model = Sequential()
-model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,1662))) #uso 64 untà LSTM, input_shape sono gli ultimi due valori di X_shape
+model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(25,126))) #ho 25 frame! da cambiare eventulmente
 model.add(LSTM(128, return_sequences=True, activation='relu'))
 model.add(LSTM(64, return_sequences=False, activation='relu'))
 model.add(Dense(64, activation='relu'))
@@ -224,14 +218,16 @@ model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categ
 model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
 #model.summary()
 
+"""
 #8. Make Predictions
 res = model.predict(X_test)
-actions[np.argmax(res[4])]
-actions[np.argmax(y_test[4])]
+actions[np.argmax(res[0])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
+actions[np.argmax(y_test[0])] #idem qui
 
 #9. Save Weights
 model.save('action.h5')
-del model
+#del model #elimina il modello creato
+"""
 model.load_weights('action.h5')
 
 #10. Evaluation using Confusion Matrix and Accuracy
@@ -241,7 +237,7 @@ ytrue = np.argmax(y_test, axis=1).tolist()
 yhat = np.argmax(yhat, axis=1).tolist()
 multilabel_confusion_matrix(ytrue, yhat)
 accuracy_score(ytrue, yhat)
-"""
+
 #11. Test in Real Time
 from scipy import stats
 colors = [(245,117,16), (117,245,16), (16,117,245)]
@@ -278,9 +274,9 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         # 2. Prediction logic
         keypoints = extract_keypoints(results)
         sequence.append(keypoints)
-        sequence = sequence[-30:]
+        sequence = sequence[-25:]
         
-        if len(sequence) == 30:
+        if len(sequence) == 25:
             res = model.predict(np.expand_dims(sequence, axis=0))[0]
             print(actions[np.argmax(res)])
             predictions.append(np.argmax(res))
@@ -314,4 +310,3 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             break
     cap.release()
     cv2.destroyAllWindows()
-"""
