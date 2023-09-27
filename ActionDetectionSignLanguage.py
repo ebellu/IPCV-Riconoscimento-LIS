@@ -121,7 +121,7 @@ for action in actions:
             pass
 
 """
-
+"""
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
 
@@ -178,7 +178,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
     cap.release()
     cv2.destroyAllWindows()
-
+"""
 
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
