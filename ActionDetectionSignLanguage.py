@@ -75,10 +75,10 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
 
 #ESTRAGGO I VALORI DEI KEYPOINT
 #len(results.left_hand_landmarks.landmark)
-pose = []
-for res in results.pose_landmarks.landmark:
-    test = np.array([res.x, res.y, res.z, res.visibility])
-    pose.append(test)
+#pose = []
+#for res in results.pose_landmarks.landmark:
+  #  test = np.array([res.x, res.y, res.z, res.visibility])
+   # pose.append(test)
 #pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(132)
 #face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(1404)
 lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
@@ -102,7 +102,7 @@ np.load('0.npy')
 DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
-actions = np.array(['A', 'B', 'C'])
+actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','Y','Z'])
 
 # Thirty videos worth of data
 no_sequences = 6
@@ -121,7 +121,7 @@ for action in actions:
             pass
 
 """
-"""
+
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
 
@@ -179,7 +179,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
     cap.release()
     cv2.destroyAllWindows()
 
-"""
 
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
@@ -218,16 +217,16 @@ model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categ
 model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
 #model.summary()
 
-"""
 #8. Make Predictions
 res = model.predict(X_test)
 actions[np.argmax(res[0])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
 actions[np.argmax(y_test[0])] #idem qui
 
+
 #9. Save Weights
 model.save('action.h5')
 #del model #elimina il modello creato
-"""
+
 model.load_weights('action.h5')
 
 #10. Evaluation using Confusion Matrix and Accuracy
@@ -243,9 +242,9 @@ from scipy import stats
 colors = [(245,117,16), (117,245,16), (16,117,245)]
 def prob_viz(res, actions, input_frame, colors):
     output_frame = input_frame.copy()
-    for num, prob in enumerate(res):
-        cv2.rectangle(output_frame, (0,60+num*40), (int(prob*100), 90+num*40), colors[num], -1)
-        cv2.putText(output_frame, actions[num], (0, 85+num*40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
+    '''for num, prob in enumerate(res):
+        #cv2.rectangle(output_frame, (0,60+num*40), (int(prob*100), 90+num*40), colors[num], -1)
+        cv2.putText(output_frame, actions[num], (0, 85+num*40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)'''
         
     return output_frame
 plt.figure(figsize=(18,18))
@@ -288,9 +287,11 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
                     if len(sentence) > 0: 
                         if actions[np.argmax(res)] != sentence[-1]:
-                            sentence.append(actions[np.argmax(res)])
+                            #sentence.append(actions[np.argmax(res)])
+                            sentence=actions[np.argmax(res)]
                     else:
-                        sentence.append(actions[np.argmax(res)])
+                        #sentence.append(actions[np.argmax(res)])
+                        sentence=actions[np.argmax(res)]
 
             if len(sentence) > 5: 
                 sentence = sentence[-5:]
