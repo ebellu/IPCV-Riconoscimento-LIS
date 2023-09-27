@@ -74,7 +74,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
 
 
 #ESTRAGGO I VALORI DEI KEYPOINT
-len(results.left_hand_landmarks.landmark)
+#len(results.left_hand_landmarks.landmark)
 pose = []
 for res in results.pose_landmarks.landmark:
     test = np.array([res.x, res.y, res.z, res.visibility])
@@ -82,7 +82,7 @@ for res in results.pose_landmarks.landmark:
 #pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(132)
 #face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(1404)
 lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
-rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten()
+rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
 #face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(1404)
 
 def extract_keypoints(results):
