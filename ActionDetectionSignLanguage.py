@@ -102,18 +102,18 @@ np.load('0.npy')
 DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
-actions = np.array(['A', 'B', 'C'])
-#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','Y','Z'])
+#actions = np.array(['A', 'B', 'C'])
+actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','Y','Z'])
 
 # Thirty videos worth of data
-no_sequences = 6
+no_sequences = 7
 
 # Videos are going to be 30 frames in length
 sequence_length = 25
 
 # Folder start
 start_folder = 1
-"""
+
 for action in actions: 
     for sequence in range(1,no_sequences+1):
         try: 
@@ -121,8 +121,8 @@ for action in actions:
         except:
             pass
 
-"""
-"""
+
+
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
 
@@ -179,7 +179,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
     cap.release()
     cv2.destroyAllWindows()
-"""
+
 
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
@@ -220,8 +220,8 @@ model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
 
 #8. Make Predictions
 res = model.predict(X_test)
-actions[np.argmax(res[2])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
-actions[np.argmax(y_test[2])] #idem qui
+actions[np.argmax(res[1])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
+actions[np.argmax(y_test[1])] #idem qui
 
 
 #9. Save Weights
