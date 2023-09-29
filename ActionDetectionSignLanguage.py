@@ -102,7 +102,8 @@ np.load('0.npy')
 DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
-actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','Y','Z'])
+actions = np.array(['A', 'B', 'C'])
+#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','Y','Z'])
 
 # Thirty videos worth of data
 no_sequences = 6
@@ -219,8 +220,8 @@ model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
 
 #8. Make Predictions
 res = model.predict(X_test)
-actions[np.argmax(res[0])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
-actions[np.argmax(y_test[0])] #idem qui
+actions[np.argmax(res[2])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
+actions[np.argmax(y_test[2])] #idem qui
 
 
 #9. Save Weights
