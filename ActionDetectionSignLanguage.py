@@ -106,7 +106,7 @@ DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps')
 actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','Y','Z'])
 
 # Thirty videos worth of data
-no_sequences = 7
+no_sequences = 17
 
 # Videos are going to be 30 frames in length
 sequence_length = 25
@@ -121,7 +121,7 @@ for action in actions:
         except:
             pass
 
-
+'''
 
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
@@ -179,8 +179,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
     cap.release()
     cv2.destroyAllWindows()
-
-
+'''
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
@@ -220,8 +219,8 @@ model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
 
 #8. Make Predictions
 res = model.predict(X_test)
-actions[np.argmax(res[1])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
-actions[np.argmax(y_test[1])] #idem qui
+actions[np.argmax(res[2])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
+actions[np.argmax(y_test[2])] #idem qui
 
 
 #9. Save Weights
@@ -237,6 +236,7 @@ ytrue = np.argmax(y_test, axis=1).tolist()
 yhat = np.argmax(yhat, axis=1).tolist()
 multilabel_confusion_matrix(ytrue, yhat)
 accuracy_score(ytrue, yhat)
+print(accuracy_score(ytrue,yhat))
 
 #11. Test in Real Time
 from scipy import stats
