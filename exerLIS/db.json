@@ -1,0 +1,28 @@
+{
+  "donewords": [
+    {
+      "id": 0,
+      "word": "bird",
+      "type": "signtheword"
+    },
+    {
+      "id": 1,
+      "word": "north america",
+      "type": "guessthesign"
+    }
+  ],
+  "userpoints": [
+    {
+      "id": 0,
+      "points": 50
+    }
+  ],
+  "modalsetting": [
+    {
+      "id": 0,
+      "webcam": true,
+      "warning": true,
+      "skip": true
+    }
+  ]
+}
