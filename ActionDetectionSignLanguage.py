@@ -4,6 +4,7 @@ import os
 from matplotlib import pyplot as plt
 import time
 import mediapipe as mp
+import keras
 
 
 #TROVO I KEYPOINT UTILIZZANDO MEDIAPIPE HOLISTIC
@@ -180,6 +181,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
     cap.release()
     cv2.destroyAllWindows()
 '''
+
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
@@ -207,6 +209,7 @@ from keras.callbacks import TensorBoard
 log_dir = os.path.join('Logs')
 tb_callback = TensorBoard(log_dir=log_dir)
 model = Sequential()
+'''
 model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(25,126))) #ho 25 frame! da cambiare eventulmente
 model.add(LSTM(128, return_sequences=True, activation='relu'))
 model.add(LSTM(64, return_sequences=False, activation='relu'))
@@ -224,10 +227,12 @@ actions[np.argmax(y_test[3])] #idem qui
 
 
 #9. Save Weights
-model.save('action.h5')
+#model.save('action.h5')
+model.save('action.keras')
 #del model #elimina il modello creato
-
-model.load_weights('action.h5')
+'''
+model = keras.models.load_model('action.keras')
+#model.load_weights('action.h5')
 
 #10. Evaluation using Confusion Matrix and Accuracy
 from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
