@@ -91,8 +91,8 @@ np.load('0.npy')
 DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
-actions = np.array(['A', 'B', 'C'])
-#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
+#actions = np.array(['A', 'B', 'C'])
+actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
 
 # Thirty videos worth of data
 no_sequences = 31
@@ -102,7 +102,7 @@ sequence_length = 25
 
 # Folder start
 start_folder = 1
-'''
+
 for action in actions: 
     for sequence in range(1,no_sequences+1):
         try: 
@@ -110,7 +110,7 @@ for action in actions:
         except:
             pass
 
-
+'''
 
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
@@ -168,8 +168,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
     cap.release()
     cv2.destroyAllWindows()
-'''
 
+'''
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
@@ -188,7 +188,7 @@ for action in actions:
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1) #cambiando il numero cambia la validation
-'''
+
 #7. Build and Train LSTM Neural Network
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
@@ -223,7 +223,7 @@ for n in range(0,8):
 #model.save('action.h5')
 model.save('action.keras')
 #del model #elimina il modello creato
-'''
+
 model = keras.models.load_model('action.keras')
 #model.load_weights('action.h5')
 
