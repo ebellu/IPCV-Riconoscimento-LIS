@@ -23,19 +23,7 @@ def draw_landmarks(image, results):
     mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS) # Draw left hand connections
     mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS) # D
 def draw_styled_landmarks(image, results):
-    """
-    # Draw face connections NON SERVE
-    
-    mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACE_CONNECTIONS, 
-                             mp_drawing.DrawingSpec(color=(80,110,10), thickness=1, circle_radius=1), 
-                             mp_drawing.DrawingSpec(color=(80,256,121), thickness=1, circle_radius=1)
-                             ) 
-    # Draw pose connections NON SERVE
-    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
-                             mp_drawing.DrawingSpec(color=(80,22,10), thickness=2, circle_radius=4), 
-                             mp_drawing.DrawingSpec(color=(80,44,121), thickness=2, circle_radius=2)
-                             ) 
-"""
+
 
     # Draw left hand connections
     mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS, 
@@ -57,7 +45,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
 
         # Make detections
         image, results = mediapipe_detection(frame, holistic)
-        print(results)
+        #print(results)
         
         # Draw landmarks
         draw_styled_landmarks(image, results)
@@ -103,18 +91,18 @@ np.load('0.npy')
 DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
-#actions = np.array(['A', 'B', 'C'])
-actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
+actions = np.array(['A', 'B', 'C'])
+#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
 
 # Thirty videos worth of data
-no_sequences = 27
+no_sequences = 31
 
 # Videos are going to be 30 frames in length
 sequence_length = 25
 
 # Folder start
 start_folder = 1
-
+'''
 for action in actions: 
     for sequence in range(1,no_sequences+1):
         try: 
@@ -123,7 +111,7 @@ for action in actions:
             pass
 
 
-'''
+
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
 
@@ -181,6 +169,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
     cap.release()
     cv2.destroyAllWindows()
 '''
+
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
@@ -198,13 +187,13 @@ for action in actions:
         labels.append(label_map[action])
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05)
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1) #cambiando il numero cambia la validation
+'''
 #7. Build and Train LSTM Neural Network
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras.callbacks import TensorBoard
-'''
+
 log_dir = os.path.join('Logs')
 tb_callback = TensorBoard(log_dir=log_dir)
 model = Sequential()
@@ -216,14 +205,19 @@ model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(actions.shape[0], activation='softmax'))
 model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
-model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
-#model.summary()
+model.fit(X_train, y_train, epochs=250, callbacks=[tb_callback])
+model.summary()
 
 #8. Make Predictions
 res = model.predict(X_test)
-actions[np.argmax(res[3])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
-actions[np.argmax(y_test[3])] #idem qui
+print(res)
 
+for n in range(0,8):
+    actions[np.argmax(res[n])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
+    print(actions[np.argmax(res[n])])
+    actions[np.argmax(y_test[n])] #idem qui
+    print(actions[np.argmax(y_test[n])])
+    #actions[np.argmax(res[0])]  dà la parola che ha la probabilità più alta
 
 #9. Save Weights
 #model.save('action.h5')
@@ -247,9 +241,7 @@ from scipy import stats
 colors = [(245,117,16), (117,245,16), (16,117,245)]
 def prob_viz(res, actions, input_frame, colors):
     output_frame = input_frame.copy()
-    '''for num, prob in enumerate(res):
-        #cv2.rectangle(output_frame, (0,60+num*40), (int(prob*100), 90+num*40), colors[num], -1)
-        cv2.putText(output_frame, actions[num], (0, 85+num*40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)'''
+    
         
     return output_frame
 plt.figure(figsize=(18,18))
