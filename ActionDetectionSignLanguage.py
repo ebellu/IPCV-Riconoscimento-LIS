@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import time
 import mediapipe as mp
 import keras
+import tensorflow as tf
 
 
 #TROVO I KEYPOINT UTILIZZANDO MEDIAPIPE HOLISTIC
@@ -81,6 +82,13 @@ def extract_keypoints(results):
     rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
     return np.concatenate([lh, rh])
 
+def resizeFrame(frame, percentageHeight, percentageWidth, width, height):
+    print(int(width+width*percentageWidth/100))
+    print(int(height+height*percentageHeight/100))
+    frame = cv2.resize(frame, (int(width+width*percentageWidth/100), int(height+height*percentageHeight/100)))
+    return frame
+
+
 result_test = extract_keypoints(results)
 np.save('0', result_test)
 np.load('0.npy')
@@ -91,18 +99,19 @@ np.load('0.npy')
 DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps') 
 
 # Actions that we try to detect
-#actions = np.array(['A', 'B', 'C'])
-actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
+actions = np.array(['A', 'B', 'C'])
+#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
 
 # Thirty videos worth of data
-no_sequences = 31
+no_transformations=4
+no_sequences = 25*no_transformations
 
 # Videos are going to be 30 frames in length
 sequence_length = 25
 
 # Folder start
 start_folder = 1
-
+'''
 for action in actions: 
     for sequence in range(1,no_sequences+1):
         try: 
@@ -110,7 +119,7 @@ for action in actions:
         except:
             pass
 
-'''
+
 
 #OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
 #LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
@@ -123,10 +132,12 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
     for action in actions:
         # Loop through sequences aka videos
         for sequence in range(start_folder, start_folder+no_sequences):
-            path = DATA_PATH + "/" + action + "/" + str(sequence) + ".mp4"
+            #path = DATA_PATH + "/" + action + "/" + str(sequence) + ".mp4"
+            path=os.path.join(DATA_PATH, action, str(sequence)+".mp4")
             cap = cv2.VideoCapture(path) #leggo il video
             # Loop through video length aka sequence length
             sequence_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) #calcolo la lunghezza del video
+
             for frame_num in range(sequence_length):
 
                 # Read feed
@@ -156,20 +167,152 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 # NEW Export keypoints
                 keypoints = extract_keypoints(results)
                 try:
-                   os.makedirs(os.path.join(DATA_PATH, action, str(sequence)))
+                   os.makedirs(os.path.join(DATA_PATH, action, str(sequence*no_transformations)))
                 except:
                    pass
-                npy_path = os.path.join(DATA_PATH, action, str(sequence), str(frame_num))
+                npy_path = os.path.join(DATA_PATH, action, str(sequence*no_transformations), str(frame_num))
                 np.save(npy_path, keypoints)
 
                 # Break gracefully
                 if cv2.waitKey(10) & 0xFF == ord('q'):
                     break
-                    
+            
+            #PRIMA TRASFORMAZIONE
+            cap = cv2.VideoCapture(path) #leggo il video
+            for frame_num in range(sequence_length):
+
+                # Read feed
+                ret, frame = cap.read()
+                if frame is None:
+                    print("ERRORE FRAME")
+                    continue 
+                width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   
+                height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                frame= resizeFrame(frame, 20, 0, width, height)
+                # Make detections
+                image, results = mediapipe_detection(frame, holistic)
+
+                # Draw landmarks
+                draw_styled_landmarks(image, results)
+                
+                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                if frame_num == 0:  
+                    cv2.putText(image, 'STARTING COLLECTION', (120,200), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
+                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                    # Show to screen
+                    cv2.imshow('OpenCV Feed', image)
+                    cv2.waitKey(500)
+                else: 
+                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                    # Show to screen
+                    cv2.imshow('OpenCV Feed', image)
+                
+                # NEW Export keypoints
+                keypoints = extract_keypoints(results)
+                try:
+                   os.makedirs(os.path.join(DATA_PATH, action, str(sequence*no_transformations+1)))
+                except:
+                   pass
+                npy_path = os.path.join(DATA_PATH, action, str(sequence*no_transformations+1), str(frame_num))
+                np.save(npy_path, keypoints)
+
+                # Break gracefully
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
+            
+
+            #SECONDA TRASFORMAZIONE
+            cap = cv2.VideoCapture(path) #leggo il video
+            for frame_num in range(sequence_length):
+
+                # Read feed
+                ret, frame = cap.read()
+                width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   
+                height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                frame= resizeFrame(frame, 0, 20, width, height)
+                # Make detections
+                image, results = mediapipe_detection(frame, holistic)
+
+                # Draw landmarks
+                draw_styled_landmarks(image, results)
+                
+                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                if frame_num == 0:  
+                    cv2.putText(image, 'STARTING COLLECTION', (120,200), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
+                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                    # Show to screen
+                    cv2.imshow('OpenCV Feed', image)
+                    cv2.waitKey(500)
+                else: 
+                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                    # Show to screen
+                    cv2.imshow('OpenCV Feed', image)
+                
+                # NEW Export keypoints
+                keypoints = extract_keypoints(results)
+                try:
+                   os.makedirs(os.path.join(DATA_PATH, action, str(sequence*no_transformations+2)))
+                except:
+                   pass
+                npy_path = os.path.join(DATA_PATH, action, str(sequence*no_transformations+2), str(frame_num))
+                np.save(npy_path, keypoints)
+
+                # Break gracefully
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
+
+            #TERZA TRASFORMAZIONE
+            cap = cv2.VideoCapture(path) #leggo il video
+            for frame_num in range(sequence_length):
+
+                # Read feed
+                ret, frame = cap.read()
+                width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   
+                height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                frame= resizeFrame(frame, 50, 50, width, height)
+                # Make detections
+                image, results = mediapipe_detection(frame, holistic)
+
+                # Draw landmarks
+                draw_styled_landmarks(image, results)
+                
+                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                if frame_num == 0:  
+                    cv2.putText(image, 'STARTING COLLECTION', (120,200), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
+                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                    # Show to screen
+                    cv2.imshow('OpenCV Feed', image)
+                    cv2.waitKey(500)
+                else: 
+                    cv2.putText(image, 'Collecting frames for {} Video Number {}'.format(action, sequence), (15,12), 
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                    # Show to screen
+                    cv2.imshow('OpenCV Feed', image)
+                
+                # NEW Export keypoints
+                keypoints = extract_keypoints(results)
+                try:
+                   os.makedirs(os.path.join(DATA_PATH, action, str(sequence*no_transformations+3)))
+                except:
+                   pass
+                npy_path = os.path.join(DATA_PATH, action, str(sequence*no_transformations+3), str(frame_num))
+                np.save(npy_path, keypoints)
+
+                # Break gracefully
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
     cap.release()
     cv2.destroyAllWindows()
-
 '''
+
 #Preprocess Data and Create Labels and Features
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
@@ -187,8 +330,9 @@ for action in actions:
         labels.append(label_map[action])
 X = np.array(sequences)
 y = to_categorical(labels).astype(int)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1) #cambiando il numero cambia la validation
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True) #cambiando il numero cambia la validation
 
+'''
 #7. Build and Train LSTM Neural Network
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
@@ -205,18 +349,20 @@ model.add(Dense(64, activation='relu'))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(actions.shape[0], activation='softmax'))
 model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
-model.fit(X_train, y_train, epochs=250, callbacks=[tb_callback])
+model.fit(X_train, y_train, epochs=1000, callbacks=[tb_callback])
 model.summary()
-
+'''
 #8. Make Predictions
+model = keras.models.load_model('action.keras')
+model.summary()
 res = model.predict(X_test)
 print(res)
 
-for n in range(0,8):
+for n in range(0,20): #da 0 a x dove x è il numero di video di validation 
     actions[np.argmax(res[n])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
-    print(actions[np.argmax(res[n])])
+    print(actions[np.argmax(res[n])]) #lettera predetta
     actions[np.argmax(y_test[n])] #idem qui
-    print(actions[np.argmax(y_test[n])])
+    print(actions[np.argmax(y_test[n])]) #Lettera vera
     #actions[np.argmax(res[0])]  dà la parola che ha la probabilità più alta
 
 #9. Save Weights
@@ -241,70 +387,82 @@ from scipy import stats
 colors = [(245,117,16), (117,245,16), (16,117,245)]
 def prob_viz(res, actions, input_frame, colors):
     output_frame = input_frame.copy()
-    
-        
+    for num, prob in enumerate(res):
+        #cv2.rectangle(output_frame, (0,60+num*40), (int(prob*100), 90+num*40), colors[num], -1)
+        cv2.putText(output_frame, actions[num], (0, 85+num*40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
     return output_frame
 plt.figure(figsize=(18,18))
 plt.imshow(prob_viz(res, actions, image, colors))
+
+
 # 1. New detection variables
 sequence = []
 sentence = []
 predictions = []
 threshold = 0.5
 
-cap = cv2.VideoCapture(0)
-# Set mediapipe model 
-with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-    while cap.isOpened():
+for action in actions:
+    # Loop through sequences aka videos
+        
+    # Set mediapipe model 
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+        for sequenceNumber in range(26, 31):
+            path=os.path.join(DATA_PATH, action, "Test", str(sequenceNumber)+".mp4")
+            cap = cv2.VideoCapture(path)
+            #sequence=[]
+            sequence_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) #calcolo la lunghezza del video
 
-        # Read feed
-        ret, frame = cap.read()
+            for frame_num in range(sequence_length):
 
-        # Make detections
-        image, results = mediapipe_detection(frame, holistic)
-        print(results)
-        
-        # Draw landmarks
-        draw_styled_landmarks(image, results)
-        
-        # 2. Prediction logic
-        keypoints = extract_keypoints(results)
-        sequence.append(keypoints)
-        sequence = sequence[-25:]
-        
-        if len(sequence) == 25:
-            res = model.predict(np.expand_dims(sequence, axis=0))[0]
-            print(actions[np.argmax(res)])
-            predictions.append(np.argmax(res))
-            
-            
-        #3. Viz logic
-            if np.unique(predictions[-10:])[0]==np.argmax(res): 
-                if res[np.argmax(res)] > threshold: 
+                
+                # Read feed
+                ret, frame = cap.read()
+
+                # Make detections
+                image, results = mediapipe_detection(frame, holistic)
+                print(results)
+                
+                # Draw landmarks
+                draw_styled_landmarks(image, results)
+                
+                # 2. Prediction logic
+                keypoints = extract_keypoints(results)
+                sequence.append(keypoints)
+                sequence = sequence[-25:]
+                
+                if frame_num == 25:
+                    res = model.predict(np.expand_dims(sequence, axis=0))[0]
+                    print("Predicted: ")
+                    print(actions[np.argmax(res)])
+                    predictions.append(np.argmax(res))
                     
-                    if len(sentence) > 0: 
-                        if actions[np.argmax(res)] != sentence[-1]:
-                            #sentence.append(actions[np.argmax(res)])
-                            sentence=actions[np.argmax(res)]
-                    else:
-                        #sentence.append(actions[np.argmax(res)])
-                        sentence=actions[np.argmax(res)]
+                    
+                #3. Viz logic
+                    if np.unique(predictions[-10:])[0]==np.argmax(res): 
+                        if res[np.argmax(res)] > threshold: 
+                            
+                            if len(sentence) > 0: 
+                                if actions[np.argmax(res)] != sentence[-1]:
+                                    #sentence.append(actions[np.argmax(res)])
+                                    sentence=actions[np.argmax(res)]
+                            else:
+                                #sentence.append(actions[np.argmax(res)])
+                                sentence=actions[np.argmax(res)]
 
-            if len(sentence) > 5: 
-                sentence = sentence[-5:]
+                    if len(sentence) > 5: 
+                        sentence = sentence[-5:]
 
-            # Viz probabilities
-            image = prob_viz(res, actions, image, colors)
-            
-        cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
-        cv2.putText(image, ' '.join(sentence), (3,30), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-        
-        # Show to screen
-        cv2.imshow('OpenCV Feed', image)
+                    # Viz probabilities
+                    image = prob_viz(res, actions, image, colors)
+                    
+                cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
+                cv2.putText(image, ' '.join(sentence), (3,30), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                
+                # Show to screen
+                cv2.imshow('OpenCV Feed', image)
+                
 
-        # Break gracefully
-        if cv2.waitKey(10) & 0xFF == ord('q'):
-            break
-    cap.release()
-    cv2.destroyAllWindows()
+                        
+cap.release()
+cv2.destroyAllWindows()
