@@ -457,7 +457,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         cap.release()
         cv2.destroyAllWindows()
 
-#12. Test in real time
+#12. Test in real time 
 sequence = []
 sentence = []
 predictions = []
@@ -499,7 +499,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                             sentence=actions[np.argmax(res)]
                     else:
                         #sentence.append(actions[np.argmax(res)])
-                        sentence=actions[np.argmax(res)]
+                        sentence=actions[np.argmax(res)] 
 
             if len(sentence) > 5: 
                 sentence = sentence[-5:]
@@ -515,7 +515,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         cv2.imshow('OpenCV Feed', image)
 
         # Break gracefully
-        if cv2.waitKey(10) & 0xFF == ord('q'):
+        if cv2.waitKey(10) & 0xFF == ord('q'): 
             break
     cap.release()
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows() 
