@@ -120,7 +120,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         for sequence in range(start_folder, start_folder+no_sequences):
             #path = DATA_PATH + "/" + action + "/" + str(sequence) + ".mp4"
             path=os.path.join(DATA_PATH, action, str(sequence)+".mp4")
-            cap = cv2.VideoCapture(path) #leggo il video
+            cap = cv2.VideoCapture(path) #leggo il video dalla cartella
             # Loop through video length aka sequence length
             sequence_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) #calcolo la lunghezza del video
 
@@ -130,12 +130,13 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 ret, frame = cap.read()
 
                 # Make detections
-                image, results = mediapipe_detection(frame, holistic)
+                image, results = mediapipe_detection(frame, holistic) #Trova i keypoint della mano
+
 
                 # Draw landmarks
                 draw_styled_landmarks(image, results)
                 
-                # NEW Apply wait logic
+                #Apply wait logic
                 if frame_num == 0:  
                     cv2.putText(image, 'STARTING COLLECTION', (120,200), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
@@ -150,7 +151,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     # Show to screen
                     cv2.imshow('OpenCV Feed', image)
                 
-                # NEW Export keypoints
+                #Export keypoints
                 keypoints = extract_keypoints(results)
                 try:
                    os.makedirs(os.path.join(DATA_PATH, action, str(sequence*no_transformations)))
@@ -336,7 +337,7 @@ model.add(Dense(32, activation='relu'))
 model.add(Dense(actions.shape[0], activation='softmax'))
 model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
 model.fit(X_train, y_train, epochs=1000, callbacks=[tb_callback])
-model.summary()
+model.summary() #Stampa riassunto modello
 '''
 #8. Make Predictions
 model = keras.models.load_model('action.keras')
