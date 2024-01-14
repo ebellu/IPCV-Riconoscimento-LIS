@@ -59,25 +59,13 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             break
     cap.release()
     cv2.destroyAllWindows()
-#draw_landmarks(frame, results)
-#plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
 
 #ESTRAGGO I VALORI DEI KEYPOINT
-#len(results.left_hand_landmarks.landmark)
-#pose = []
-#for res in results.pose_landmarks.landmark:
-  #  test = np.array([res.x, res.y, res.z, res.visibility])
-   # pose.append(test)
-#pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(132)
-#face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(1404)
 lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
 rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
-#face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(1404)
 
 def extract_keypoints(results):
-    #pose = np.array([[res.x, res.y, res.z, res.visibility] for res in results.pose_landmarks.landmark]).flatten() if results.pose_landmarks else np.zeros(33*4)
-    #face = np.array([[res.x, res.y, res.z] for res in results.face_landmarks.landmark]).flatten() if results.face_landmarks else np.zeros(468*3)
     lh = np.array([[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(21*3)
     rh = np.array([[res.x, res.y, res.z] for res in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(21*3)
     return np.concatenate([lh, rh])
@@ -100,7 +88,6 @@ DATA_PATH = os.path.join('video training 25fps-25frame\IPCV 25fps')
 
 # Actions that we try to detect
 actions = np.array(['A', 'B', 'C'])
-#actions = np.array(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N','O','P', 'Q', 'R', 'S', 'T', 'U', 'V','W', 'X','Y','Z'])
 
 # Thirty videos worth of data
 no_transformations=4
@@ -121,8 +108,7 @@ for action in actions:
 
 
 
-#OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL TESTING
-#LUI LO FA PRENDENDO I VIDEO DALLA WEBCAM, NOI DOBBIAMO DARGLI I VIDEO GIà FATTI E TAGLIATI
+#OTTENGO I VALORI DEI KEYPOINT PER IL TRAINIG E IL CROSS VALIDATION
 
 # Set mediapipe model 
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
@@ -149,7 +135,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 # Draw landmarks
                 draw_styled_landmarks(image, results)
                 
-                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                # NEW Apply wait logic
                 if frame_num == 0:  
                     cv2.putText(image, 'STARTING COLLECTION', (120,200), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
@@ -195,7 +181,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 # Draw landmarks
                 draw_styled_landmarks(image, results)
                 
-                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                # NEW Apply wait logic 
                 if frame_num == 0:  
                     cv2.putText(image, 'STARTING COLLECTION', (120,200), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
@@ -239,7 +225,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 # Draw landmarks
                 draw_styled_landmarks(image, results)
                 
-                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                # NEW Apply wait logic
                 if frame_num == 0:  
                     cv2.putText(image, 'STARTING COLLECTION', (120,200), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
@@ -282,7 +268,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                 # Draw landmarks
                 draw_styled_landmarks(image, results)
                 
-                # NEW Apply wait logic SUPERFLUO!!!!!!!!!!!!
+                # NEW Apply wait logic
                 if frame_num == 0:  
                     cv2.putText(image, 'STARTING COLLECTION', (120,200), 
                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255, 0), 4, cv2.LINE_AA)
@@ -359,19 +345,17 @@ res = model.predict(X_test)
 print(res)
 
 for n in range(0,20): #da 0 a x dove x è il numero di video di validation 
-    actions[np.argmax(res[n])] #prima c'era 4, valore da aumentare se aumentiamo il numero di video per il training
+    actions[np.argmax(res[n])] 
     print(actions[np.argmax(res[n])]) #lettera predetta
-    actions[np.argmax(y_test[n])] #idem qui
+    actions[np.argmax(y_test[n])] 
     print(actions[np.argmax(y_test[n])]) #Lettera vera
-    #actions[np.argmax(res[0])]  dà la parola che ha la probabilità più alta
 
 #9. Save Weights
-#model.save('action.h5')
 model.save('action.keras')
-#del model #elimina il modello creato
+
 
 model = keras.models.load_model('action.keras')
-#model.load_weights('action.h5')
+
 
 #10. Evaluation using Confusion Matrix and Accuracy
 from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
@@ -435,17 +419,15 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                             
                             if len(sentence) > 0: 
                                 if actions[np.argmax(res)] != sentence[-1]:
-                                    #sentence.append(actions[np.argmax(res)])
                                     sentence=actions[np.argmax(res)]
                             else:
-                                #sentence.append(actions[np.argmax(res)])
                                 sentence=actions[np.argmax(res)]
 
                     if len(sentence) > 5: 
                         sentence = sentence[-5:]
 
                 # Viz probabilities
-                #image = prob_viz(res, actions, image, colors)
+                image = prob_viz(res, actions, image, colors)
                     
                 cv2.rectangle(image, (0,0), (640, 40), (245, 117, 16), -1)
                 cv2.putText(image, ' '.join(sentence), (3,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
@@ -495,10 +477,8 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     
                     if len(sentence) > 0: 
                         if actions[np.argmax(res)] != sentence[-1]:
-                            #sentence.append(actions[np.argmax(res)])
-                            sentence=actions[np.argmax(res)]
+                           sentence=actions[np.argmax(res)]
                     else:
-                        #sentence.append(actions[np.argmax(res)])
                         sentence=actions[np.argmax(res)] 
 
             if len(sentence) > 5: 
@@ -519,3 +499,5 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             break
     cap.release()
     cv2.destroyAllWindows() 
+
+    
